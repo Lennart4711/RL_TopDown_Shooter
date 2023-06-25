@@ -4,25 +4,21 @@ import pygame
 
 
 class Bullet:
-    def __init__(self, pos: np.ndarray, velocity: np.ndarray):
+    def __init__(self, pos: np.ndarray, velocity: np.ndarray, shooter_id: int):
         self.pos = pos
         self.velocity = velocity
         self.alive = True
+        self.shooter = shooter_id
 
-    def move(self, walls: list, players: list):
+    def move(self, walls: list, dimensions: tuple):
         for wall in walls:
             if crossed_wall(wall, [self.pos, self.pos + self.velocity]):
                 self.alive = False
                 return
 
-        for player in players:
-            if np.linalg.norm(self.pos - player.pos) < 10:
-                self.alive = False
-                player.hit()
-
         self.pos += self.velocity
 
-        if self.out_of_bounds(800, 800):
+        if self.out_of_bounds(dimensions[0], dimensions[1]):
             self.alive = False
 
     def out_of_bounds(self, width, height):

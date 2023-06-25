@@ -30,12 +30,20 @@ def line_line_intersection(line1, line2):
         return None
 
     # Calculate the intersection point coordinates
-    intersection_x = ((x1 * y2 - y1 * x2) * (x3 - x4) - (x1 - x2) * (x3 * y4 - y3 * x4)) / denominator
-    intersection_y = ((x1 * y2 - y1 * x2) * (y3 - y4) - (y1 - y2) * (x3 * y4 - y3 * x4)) / denominator
+    intersection_x = (
+        (x1 * y2 - y1 * x2) * (x3 - x4) - (x1 - x2) * (x3 * y4 - y3 * x4)
+    ) / denominator
+    intersection_y = (
+        (x1 * y2 - y1 * x2) * (y3 - y4) - (y1 - y2) * (x3 * y4 - y3 * x4)
+    ) / denominator
 
     # Check if the intersection point lies within the line segments
-    if (min(x1, x2) <= intersection_x <= max(x1, x2) and min(y1, y2) <= intersection_y <= max(y1, y2) and
-            min(x3, x4) <= intersection_x <= max(x3, x4) and min(y3, y4) <= intersection_y <= max(y3, y4)):
+    if (
+        min(x1, x2) <= intersection_x <= max(x1, x2)
+        and min(y1, y2) <= intersection_y <= max(y1, y2)
+        and min(x3, x4) <= intersection_x <= max(x3, x4)
+        and min(y3, y4) <= intersection_y <= max(y3, y4)
+    ):
         return intersection_x, intersection_y
     else:
         return None

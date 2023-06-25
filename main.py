@@ -1,83 +1,86 @@
 import numpy as np
 import pygame
-import random
 
 pygame.init()
 
 from player import Player
+from human_player import HumanPlayer
 from utils import crossed_wall
 
+RUNNING_SPEED = 2
 WIDTH = 400
 HEIGHT = 400
-RUNNING_SPEED = 2
 
 
-screen = pygame.display.set_mode((WIDTH, HEIGHT))
-clock = pygame.time.Clock()
+class Game:
+    def __init__(self, walls: list, player1: Player, player2: Player):
+        self.walls = walls
+        self.player1 = player1
+        self.player2 = player2
+        self.clock = pygame.time.Clock()
+        self.screen = pygame.display.set_mode((WIDTH, HEIGHT))
+        self.running = True
 
-p1 = Player(np.array([WIDTH / 4, HEIGHT / 2]), 0)
-target = Player(np.array([WIDTH / 1.5, HEIGHT / 2]), 0)
+    def loop(self):
+        while self.running:
+            self.player1.input(self.walls)
 
-running = True
+            self.player1.update(self.walls, self.player2, (WIDTH, HEIGHT))
+            self.player2.update(self.walls, self.player1, (WIDTH, HEIGHT))
 
-walls = [
-    [np.array([0, 0]), np.array([WIDTH, 0])],
-    [np.array([WIDTH, 0]), np.array([WIDTH, HEIGHT])],
-    [np.array([WIDTH, HEIGHT]), np.array([0, HEIGHT])],
-    [np.array([0, HEIGHT]), np.array([0, 0])],
-    [np.array([WIDTH / 2, HEIGHT/4]), np.array([WIDTH / 2, HEIGHT / 1.5])],
-]
-
-
-while running:
-    screen.fill((0, 0, 0))
-
-    for event in pygame.event.get():
-        if event.type == pygame.QUIT:
-            running = False
-
-    # if a or d is pressed, rotate player1
-    keys = pygame.key.get_pressed()
-    if keys[pygame.K_a]:
-        p1.rotate(-0.1)
-    if keys[pygame.K_d]:
-        p1.rotate(0.1)
-
-    # Rotate towards the mouse
-    mouse_pos = np.array(pygame.mouse.get_pos())
-    p1.rotate_towards(mouse_pos)
-
-    if keys[pygame.K_w]:
-        p1.move(walls, 0, -RUNNING_SPEED)
-    if keys[pygame.K_s]:
-        p1.move(walls, 0, RUNNING_SPEED)
-    if keys[pygame.K_a]:
-        p1.move(walls, -RUNNING_SPEED, 0)
-    if keys[pygame.K_d]:
-        p1.move(walls, RUNNING_SPEED, 0)
-
-    # if mouse is pressed, shoot
-    if pygame.mouse.get_pressed()[0]:
-        p1.shoot()
-
-    p1.move_bullets(walls, [])
-
-    p1.draw(screen)
-    p1.cast_ray(screen, walls, -45)
-    p1.cast_ray(screen, walls, 45)#
-    p1.draw_bullets(screen)
-    for wall in walls:
-        pygame.draw.line(screen, (255, 255, 255), wall[0], wall[1])
-
-    FOW = np.deg2rad(90)
-    # If the player can see the target, draw a line between them
-    if not any(crossed_wall(wall, [p1.pos, target.pos]) for wall in walls):
-        # Draw the line if the player can see the target inside a 90 degree angle
-        if p1.sees_player(target, 45):
-            pygame.draw.line(screen, (0, 255, 0), p1.pos, target.pos)
-            target.draw(screen)
+            self.clock.tick(60)
+            self.draw()
+            self.exit_game()
+        pygame.quit()
 
 
-    clock.tick(60)
-    pygame.display.update()
+    def draw(self):
+        self.screen.fill((0, 0, 0))
+
+        for wall in self.walls:
+            pygame.draw.line(self.screen, (255, 255, 255), wall[0], wall[1])
+
+        self.player1.draw(self.screen)
+        self.player2.draw(self.screen)
+
+        self.draw_lines_of_sight()
+
+        pygame.display.update()
+
+    def exit_game(self):
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                self.running = False
+
+    def draw_lines_of_sight(self):
+        # if no walls inbetween, draw line
+        if not any(
+            crossed_wall(wall, [self.player1.pos, self.player2.pos])
+            for wall in self.walls
+        ):
+            pygame.draw.line(
+                self.screen, (255, 255, 255), self.player1.pos, self.player2.pos
+            )
+
+    def player_input(self):
+        for player in self.players:
+            player.input()
+
+if __name__ == "__main__":
+    game = Game(
+        walls = [
+            [np.array([0, 0]), np.array([WIDTH, 0])],
+            [np.array([WIDTH, 0]), np.array([WIDTH, HEIGHT])],
+            [np.array([WIDTH, HEIGHT]), np.array([0, HEIGHT])],
+            [np.array([0, HEIGHT]), np.array([0, 0])],
+            [np.array([WIDTH / 2, HEIGHT / 4]), np.array([WIDTH / 2, HEIGHT / 1.5])],
+        ],
+        player1 = HumanPlayer(np.array([WIDTH / 1.5, HEIGHT / 2]), 0),
+        player2 = Player(np.array([WIDTH / 1.9, HEIGHT / 2.2]), 0),
+    )
+    
+    
+
+    game.loop()
+
 
