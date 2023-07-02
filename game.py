@@ -41,9 +41,11 @@ class Game:
         self.draw()
 
         state = self.get_state()
-        self.clock.tick(60)
+        pygame.event.pump()
+
         return state
     
+
     def get_state(self):
         time_till_next_shot_ms = int(
             1000 * (max(0.1 - (time.time() - self.player1.last_shot), 0))

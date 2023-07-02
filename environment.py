@@ -1,12 +1,8 @@
-import tensorflow as tf
 import numpy as np
 from tf_agents.environments import py_environment
 from tf_agents.environments import tf_environment
 from tf_agents.environments import tf_py_environment
-from tf_agents.environments import utils
 from tf_agents.specs import array_spec
-from tf_agents.environments import wrappers
-from tf_agents.environments import suite_gym
 from tf_agents.trajectories import time_step as ts
 from tf_agents.typing import types
 from game import Game
@@ -59,7 +55,7 @@ class GameEnv(py_environment.PyEnvironment):
                     np.array([WIDTH / 2, HEIGHT / 1.5]),
                 ],
             ],
-            player1=AI_Player(np.array([WIDTH / 2, HEIGHT / 2]), 0),
+            player1=AI_Player(np.array([WIDTH / 3, HEIGHT / 2]), 0),
             player2=Player(np.array([WIDTH / 1.9, HEIGHT / 2.2]), 0),
         )
         return ts.restart(np.array(self._state, dtype=np.float32))
@@ -94,5 +90,5 @@ class GameEnv(py_environment.PyEnvironment):
 
 if __name__ == "__main__":
     py_environment = GameEnv()
-    utils.validate_py_environment(py_environment, episodes=5)
-
+    tf_env = tf_py_environment.TFPyEnvironment(py_environment)
+    
