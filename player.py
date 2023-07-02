@@ -1,6 +1,6 @@
 import pygame
 import numpy as np
-from utils import crossed_wall, line_line_intersection
+from utils import crossed_wall
 from bullet import Bullet
 import time
 
@@ -18,7 +18,8 @@ class Player:
         self.health = 100
         self.id = id(self)
         self.bullets = []
-
+        self.enemies_last_pos = np.array([200, 200])
+        self.inflicted_damage = 0
 
     def rotate(self, angle_degrees: float):
         self.angle += angle_degrees
@@ -71,7 +72,7 @@ class Player:
 
     def hit(self):
         self.health -= BULLET_DAMAGE
-
+        
     def draw(self, screen):
         pygame.draw.circle(screen, (255, 0, 0), (int(self.pos[0]), int(self.pos[1])), 4)
         # draw a line of length 10 in the direction of the player
@@ -104,6 +105,7 @@ class Player:
 
         # Check if the angle is less than n degrees
         if angle_degrees < n:
+            self.enemies_last_pos = target_player.pos
             return True
         else:
             return False
@@ -112,6 +114,7 @@ class Player:
         pass
 
     def update(self, walls, enemy, dimensions):
+        self.inflicted_damage = 0
         for bullet in self.bullets:
             bullet.move(walls, dimensions)
             if bullet.out_of_bounds(dimensions[0], dimensions[1]):
@@ -119,6 +122,10 @@ class Player:
             if np.linalg.norm(bullet.pos - enemy.pos) < 10:
                 bullet.alive = False
                 enemy.hit()
-        self.bullets = [bullet for bullet in self.bullets if bullet.alive]
-        
+                self.inflicted_damage += BULLET_DAMAGE
 
+        if enemy.health >= 0:
+            self.inflicted_damage = 100
+        self.bullets = [bullet for bullet in self.bullets if bullet.alive]
+
+   

@@ -4,8 +4,8 @@ import pygame
 
 
 class HumanPlayer(Player):
-    def __init__(self, pos: np.ndarray, id: int):
-        super().__init__(pos, id)
+    def __init__(self, pos: np.ndarray, angle: float):
+        super().__init__(pos, angle)
 
     def input(self, walls: list):
         keys = pygame.key.get_pressed()

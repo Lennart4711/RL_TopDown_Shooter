@@ -1,5 +1,6 @@
 import numpy as np
 import pygame
+import time
 
 pygame.init()
 
@@ -21,18 +22,44 @@ class Game:
         self.screen = pygame.display.set_mode((WIDTH, HEIGHT))
         self.running = True
 
-    def loop(self):
-        while self.running:
-            self.player1.input(self.walls)
+    # def loop(self):
+    #     while self.running:
+    #         self.player1.input(self.walls)
 
-            self.player1.update(self.walls, self.player2, (WIDTH, HEIGHT))
-            self.player2.update(self.walls, self.player1, (WIDTH, HEIGHT))
+    #         self.player1.update(self.walls, self.player2, (WIDTH, HEIGHT))
+    #         self.player2.update(self.walls, self.player1, (WIDTH, HEIGHT))
 
-            self.clock.tick(60)
-            self.draw()
-            self.exit_game()
-        pygame.quit()
+    #         self.clock.tick(60)
+    #         self.draw()
+    #         self.exit_game()
+    #     pygame.quit()
 
+    def step(self, action):
+        self.player1.input(self.walls, action)
+        self.player1.update(self.walls, self.player2, (WIDTH, HEIGHT))
+        self.player2.update(self.walls, self.player1, (WIDTH, HEIGHT))
+        self.draw()
+
+        state = self.get_state()
+        self.clock.tick(60)
+        return state
+    
+    def get_state(self):
+        time_till_next_shot_ms = int(
+            1000 * (max(0.1 - (time.time() - self.player1.last_shot), 0))
+        )
+
+        return np.array(
+            [
+                max(self.player1.health, 0),
+                max(self.player2.health, 0),
+                time_till_next_shot_ms,
+                self.player1.enemies_last_pos[0],
+                self.player1.enemies_last_pos[1],
+                self.player1.inflicted_damage,
+            ],
+            dtype=np.float32,
+        )
 
     def draw(self):
         self.screen.fill((0, 0, 0))
@@ -68,19 +95,15 @@ class Game:
 
 if __name__ == "__main__":
     game = Game(
-        walls = [
+        walls=[
             [np.array([0, 0]), np.array([WIDTH, 0])],
             [np.array([WIDTH, 0]), np.array([WIDTH, HEIGHT])],
             [np.array([WIDTH, HEIGHT]), np.array([0, HEIGHT])],
             [np.array([0, HEIGHT]), np.array([0, 0])],
             [np.array([WIDTH / 2, HEIGHT / 4]), np.array([WIDTH / 2, HEIGHT / 1.5])],
         ],
-        player1 = HumanPlayer(np.array([WIDTH / 1.5, HEIGHT / 2]), 0),
-        player2 = Player(np.array([WIDTH / 1.9, HEIGHT / 2.2]), 0),
+        player1=HumanPlayer(np.array([WIDTH / 1.5, HEIGHT / 2]), 0),
+        player2=Player(np.array([WIDTH / 1.9, HEIGHT / 2.2]), 0),
     )
-    
-    
 
     game.loop()
-
-
